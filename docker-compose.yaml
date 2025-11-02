@@ -7,32 +7,21 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+
     ports:
       - port: 8000
         expose: true
         public: true
+
     env:
-      # Inserisci qui la tua stringa Base64 come secret in Coolify e referenziala come variabile
       CREDENTIALS_CONFIG: ${CREDENTIALS_CONFIG}
-      # (opzionale) path dove creeremo il file decodificato
-      SERVICE_ACCOUNT_PATH: /app/credentials/service-account.json
       DRIVE_FOLDER_ID: ${DRIVE_FOLDER_ID}
       LOG_LEVEL: info
 
-    # Non serve creare volumi se decodifichi direttamente dalla env var,
-    # ma puoi tenerne uno per persistency se preferisci.
-    volumes: []
-
-    # Comando di start che:
-    # 1) crea la cartella /app/credentials
-    # 2) decodifica CREDENTIALS_CONFIG in SERVICE_ACCOUNT_PATH
-    # 3) imposta GOOGLE_APPLICATION_CREDENTIALS (utile per le librerie Google)
-    # 4) avvia uvicorn
     start:
       cmd: >
-        sh -lc "mkdir -p $(dirname \"$SERVICE_ACCOUNT_PATH\") && \
-        if [ -n \"$CREDENTIALS_CONFIG\" ]; then echo \"$CREDENTIALS_CONFIG\" | base64 -d > \"$SERVICE_ACCOUNT_PATH\"; fi && \
-        export GOOGLE_APPLICATION_CREDENTIALS=\"$SERVICE_ACCOUNT_PATH\" && \
-        uvicorn mcp_google_sheets.main:app --host 0.0.0.0 --port 8000"
+        uvicorn mcp_google_sheets.main:app
+        --host 0.0.0.0
+        --port 8000
 
     restart_policy: unless-stopped
