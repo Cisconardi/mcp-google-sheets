@@ -1,0 +1,32 @@
+version: "1.0"
+name: mcp-google-sheets
+
+services:
+  app:
+    name: mcp-google-sheets
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - port: 8000
+        expose: true
+        public: true
+    env:
+      # Variabili d’ambiente configurabili anche da interfaccia Coolify
+      SERVICE_ACCOUNT_PATH: /app/credentials/service-account.json
+      DRIVE_FOLDER_ID: ${DRIVE_FOLDER_ID}
+      LOG_LEVEL: info
+
+      # In alternativa, puoi usare una singola variabile base64 per le credenziali:
+      # CREDENTIALS_CONFIG: ${CREDENTIALS_CONFIG}
+
+    volumes:
+      - name: credentials
+        mount: /app/credentials
+
+    start:
+      cmd: >
+        uvicorn mcp_google_sheets.main:app
+        --host 0.0.0.0
+        --port 8000
+    restart_policy: unless-stopped
